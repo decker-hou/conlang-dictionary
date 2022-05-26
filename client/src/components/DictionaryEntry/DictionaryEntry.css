@@ -1,0 +1,12 @@
+.dictionaryEntry {
+  width: 100%;
+  text-align: left;
+}
+
+.dictionaryCell {
+  white-space: pre;
+  padding: 4px;
+  outline: 1px solid grey;
+  font-style: normal;
+  min-width: 100px;
+}

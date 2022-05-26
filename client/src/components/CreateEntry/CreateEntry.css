@@ -1,0 +1,32 @@
+.createEntry {
+  display: flex;
+  height: 30px;
+  text-align: left;
+  margin: 60px 0px;
+}
+
+.entryLabel {
+  display: block;
+}
+
+.editor {
+  position: relative;
+  top: -40px;
+}
+
+.inner-editor {
+  min-height: 10px;
+  background-color: white;
+}
+
+.trix-button--icon-heading-1 {
+  display: none;
+}
+
+.trix-button-group--file-tools {
+  display: none !important;
+}
+
+.trix-button-group--history-tools {
+  display: none !important;
+}
