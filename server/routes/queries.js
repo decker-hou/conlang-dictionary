@@ -36,7 +36,7 @@ const getLanguagesByUser = (request, response) => {
   const { userId } = request;
   pool.query('SELECT * FROM languages WHERE user_id = $1 ORDER BY language_id ASC', [userId], (error, results) => {
     if (error) {
-      throw error;
+      response.status(500).send();
     } else {
       response.status(200).send(results.rows);
     }
@@ -44,31 +44,41 @@ const getLanguagesByUser = (request, response) => {
 };
 
 const createLanguage = (request, response) => {
-  const { languageName, summary, visibility } = request.body;
+  const {
+    languageName, summary, visibility, pos,
+    grammaticalGender, etymology, pronunciation,
+  } = request.body;
   const user = request.userId;
 
   pool.query(
-    'INSERT INTO languages (language_name, summary, visibility, user_id) VALUES ($1, $2, $3, $4)',
-    [languageName, summary, visibility, user],
+    'INSERT INTO languages (language_name, summary, visibility, pos, grammatical_gender, etymology, pronunciation, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+    [languageName, summary, visibility, pos, grammaticalGender, etymology, pronunciation, user],
 
     (error) => {
       if (error) {
-        throw error;
+        console.log(error);
+        response.status(500).send();
+      } else {
+        response.status(201).send();
       }
-      response.status(201).send();
     },
   );
 };
 
 const updateLanguage = (request, response) => {
   const languageId = parseInt(request.params.id, 10);
-  const { languageName, summary, visibility } = request.body;
+  const {
+    languageName, summary, visibility, pos,
+    grammaticalGender, etymology, pronunciation,
+  } = request.body;
 
   pool.query(
-    'UPDATE languages SET language_name = $1, summary = $2, visibility = $3 WHERE language_id = $4',
-    [languageName, summary, visibility, languageId],
+    'UPDATE languages SET language_name = $1, summary = $2, visibility = $3, pos = $4, grammatical_gender = $5, etymology = $6, pronunciation = $7 WHERE language_id = $8',
+    [languageName, summary, visibility, pos,
+      grammaticalGender, etymology, pronunciation, languageId],
     (error, results) => {
       if (error) {
+        console.log(error);
         throw error;
       }
       if (results.rowCount > 0) {
@@ -95,9 +105,19 @@ const deleteLanguage = (request, response) => {
   });
 };
 
+// only returns the optional language fields that are marked as true in the language settings
 const getWords = (request, response) => {
   const languageId = parseInt(request.params.id, 10);
-  pool.query('SELECT * FROM words WHERE language_id = $1 ORDER BY word ASC', [languageId], (error, results) => {
+  pool.query(`
+    SELECT word, word_definition,
+      CASE WHEN l.pos THEN w.pos ELSE NULL END as pos,
+      CASE WHEN l.grammatical_gender THEN w.grammatical_gender ELSE NULL END as grammatical_gender,
+      CASE WHEN l.etymology THEN w.etymology ELSE NULL END as etymology,
+      CASE WHEN l.pronunciation THEN w.pronunciation ELSE NULL END as pronunciation
+    FROM words w
+    JOIN languages l ON l.language_id = w.language_id
+    WHERE w.language_id = $1;
+      `, [languageId], (error, results) => {
     if (error) {
       throw error;
     }

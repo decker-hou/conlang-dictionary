@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import './Dictionary.css';
+import useApiFetch from '../../utils/apiFetch';
 import CreateEntry from '../../components/CreateEntry/CreateEntry';
-import DictionaryEntry from '../../components/DictionaryEntry/DictionaryEntry';
+import DictionaryTable from '../../components/DictionaryTable/DictionaryTable';
+// import DictionaryEntry from '../../components/DictionaryEntry/DictionaryEntry';
+
+function readyData(data) {
+  return data.map((entry) => ({
+    col1: entry.word,
+    col2: entry.word_definition,
+  }));
+}
+
+const columns = [
+  {
+    Header: 'Entry',
+    accessor: 'col1', // accessor is the "key" in the data
+  },
+  {
+    Header: 'Definition',
+    accessor: 'col2',
+    // eslint-disable-next-line react/no-danger
+    Cell: ({ row }) => <span dangerouslySetInnerHTML={{ __html: row.original.col2 }} />,
+  },
+];
 
 function Dictionary() {
   const navigate = useNavigate();
   const [languageName, setLanguageName] = useState('');
-  const [wordList, setWordList] = useState([]);
   const params = useParams();
-
-  async function updateWordList() {
-    const language = params.id;
-    const res = await fetch(`http://localhost:8000/dictionary/${language}`, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-    });
-    const data = await res.json();
-    setWordList(data);
-  }
+  const [update, setUpdate] = useState(false);
+  const { data, loading } = useApiFetch(`/dictionary/${params.id}`, update);
 
   async function getLanguage() {
     const res = await fetch(`http://localhost:8000/language/${params.id}`, {
@@ -35,8 +45,8 @@ function Dictionary() {
       navigate('/404'); // might change to render on page, can also be used for not authorized view later
       return '';
     }
-    const data = await res.json();
-    return data[0].language_name;
+    const json = await res.json();
+    return json[0].language_name;
   }
 
   // this is only used for initializing
@@ -44,7 +54,6 @@ function Dictionary() {
     getLanguage().then((name) => {
       if (name) {
         setLanguageName(name);
-        updateWordList();
       }
     });
   }, []);
@@ -56,9 +65,23 @@ function Dictionary() {
 
       <CreateEntry
         languageId={params.id}
-        callback={updateWordList}
+        callback={() => { setUpdate(!update); }}
       />
-      <table className="wordList">
+      { !loading
+      && (
+      <DictionaryTable
+        columns={columns}
+        data={readyData(data)}
+      />
+      )}
+    </div>
+
+  );
+}
+
+export default Dictionary;
+
+/*      <table className="wordList">
         <tbody>
           <tr>
             <th>Word</th>
@@ -74,10 +97,4 @@ function Dictionary() {
             />
           ))}
         </tbody>
-      </table>
-    </div>
-
-  );
-}
-
-export default Dictionary;
+      </table> */

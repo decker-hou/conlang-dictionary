@@ -2,25 +2,50 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-
 import './EditLanguage.css';
+
+const VISIBILITY = {
+  public: 1,
+  unlisted: 2,
+  private: 3,
+};
 
 function EditLanguage(props) {
   const {
-    newLanguage, languageId, languageName, summary, onSubmit, onCancel,
+    newLanguage, languageId, languageName, summary, pos, etymology, grammaticalGender,
+    pronunciation,
+    onSubmit, onCancel,
   } = props;
 
+  const [error, setError] = useState(false);
   const [input, setInput] = useState({
-    language_name: languageName,
+    languageName,
     summary,
-    visibility: 1,
+    pos: !!pos,
+    etymology: !!etymology,
+    grammaticalGender: !!grammaticalGender,
+    pronunciation: !!pronunciation,
+    visibility: 'public',
   });
 
   const inputHandler = (e) => {
-    setInput({ // confusing use of name property?
+    setInput({
       ...input,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const checkboxHandler = (e) => {
+    setInput({
+      ...input,
+      [e.target.name]: e.target.checked,
+    });
+  };
+
+  // converts visibility from string to numeric value
+  const formatPayload = (p) => {
+    const payload = { ...p, visibility: VISIBILITY[p.visibility] };
+    return JSON.stringify(payload);
   };
 
   async function submitNewLanguage() {
@@ -30,7 +55,7 @@ function EditLanguage(props) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(input),
+      body: formatPayload(input),
       mode: 'cors',
     });
   }
@@ -42,12 +67,16 @@ function EditLanguage(props) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(input),
+      body: formatPayload(input),
       mode: 'cors',
     });
   }
 
   async function submit() {
+    if (!input.languageName) {
+      setError(true);
+      return;
+    }
     if (newLanguage) {
       submitNewLanguage();
     } else {
@@ -58,13 +87,14 @@ function EditLanguage(props) {
 
   return (
     <div className="editLanguage">
-      <label className="languageLabel" htmlFor="language_name">Name</label>
+      <label className="languageLabel" htmlFor="languageName">Name</label>
       <input
         type="text"
-        name="language_name"
+        name="languageName"
         onChange={inputHandler}
-        value={input.language_name}
+        value={input.languageName}
       />
+      {error && <div className="error">Name cannot be empty</div>}
 
       <label className="languageLabel" htmlFor="summary">Summary</label>
       <div>255 characters max</div>
@@ -75,17 +105,81 @@ function EditLanguage(props) {
         value={input.summary}
       />
 
+      <fieldset>
+        <legend>Optional Fields</legend>
+        <label className="languageLabel">
+          <input
+            type="checkbox"
+            name="pos"
+            onChange={checkboxHandler}
+            checked={input.pos}
+          />
+          Position of speech
+        </label>
+        <label className="languageLabel">
+          <input
+            type="checkbox"
+            name="pronunciation"
+            onChange={checkboxHandler}
+            checked={input.pronunciation}
+          />
+          Pronunciation
+        </label>
+        <label className="languageLabel">
+          <input
+            type="checkbox"
+            name="grammaticalGender"
+            onChange={checkboxHandler}
+            checked={input.grammaticalGender}
+          />
+          Grammatical gender
+        </label>
+        <label className="languageLabel">
+          <input
+            type="checkbox"
+            name="etymology"
+            onChange={checkboxHandler}
+            checked={input.etymology}
+          />
+          Etymology
+        </label>
+      </fieldset>
+
       <div className="languageLabel">Visibility</div>
 
       <fieldset id="visibilityButtons">
-        <input name="visibility" type="radio" id="public" />
-        <label htmlFor="public">Public</label>
+        <label>
+          <input
+            name="visibility"
+            type="radio"
+            value="public"
+            checked={input.visibility === 'public'}
+            onChange={inputHandler}
+          />
+          Public
+        </label>
 
-        <input name="visibility" type="radio" id="unlisted" />
-        <label htmlFor="unlisted">Unlisted</label>
+        <label>
+          <input
+            name="visibility"
+            type="radio"
+            value="unlisted"
+            checked={input.visibility === 'unlisted'}
+            onChange={inputHandler}
+          />
+          Unlisted
+        </label>
 
-        <input name="visibility" type="radio" id="private" />
-        <label htmlFor="private">Private</label>
+        <label>
+          <input
+            name="visibility"
+            type="radio"
+            value="private"
+            checked={input.visibility === 'private'}
+            onChange={inputHandler}
+          />
+          Private
+        </label>
       </fieldset>
 
       <button type="submit" onClick={submit}>{newLanguage ? 'Create' : 'Save'}</button>
@@ -96,16 +190,25 @@ function EditLanguage(props) {
 
 EditLanguage.propTypes = {
   newLanguage: PropTypes.bool.isRequired,
-  languageId: PropTypes.string,
-  languageName: PropTypes.string.isRequired,
+  languageId: PropTypes.number,
+  languageName: PropTypes.string,
   summary: PropTypes.string,
+  pos: PropTypes.bool,
+  etymology: PropTypes.bool,
+  grammaticalGender: PropTypes.bool,
+  pronunciation: PropTypes.bool,
   onSubmit: PropTypes.func,
   onCancel: PropTypes.func,
 };
 
 EditLanguage.defaultProps = {
-  languageId: '',
+  languageName: '',
+  languageId: 0,
   summary: '',
+  pos: true,
+  etymology: true,
+  grammaticalGender: true,
+  pronunciation: true,
   onSubmit: () => {},
   onCancel: () => {},
 };

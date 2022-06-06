@@ -1,10 +1,9 @@
 import React from 'react';
 
 function Error() {
-
   return (
     <div>
-        Temp Error Page
+      Temp Error Page
     </div>
   );
 }

@@ -30,8 +30,8 @@ function WordPrompt() {
         <b>{word}</b>
       </p>
 
-      <button onClick={skipPrompt}>Skip (keep prompt)</button>
-      <button>Skip (discard prompt)</button>
+      <button type="submit" onClick={skipPrompt}>Skip (keep prompt)</button>
+      <button type="submit">Skip (discard prompt)</button>
 
       <CreateEntry
         languageId={params.id}

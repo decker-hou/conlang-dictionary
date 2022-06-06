@@ -4,6 +4,8 @@ import './DictionaryEntry.css';
 
 // spreadsheet like display format for a word
 
+// todo: check performance, see if it's rerendering unnecessarily
+
 function DictionaryEntry(props) {
   const {
     wordId, word, definition, callback,

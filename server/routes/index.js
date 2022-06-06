@@ -95,24 +95,27 @@ router.get('/refresh', async (req, res) => {
 // revokes tokens
 router.get('/logout', async (req, res) => {
   if (req.cookies.auth) {
-    console.log(SIGNATURE)
-    const cookie = jsonwebtoken.verify(req.cookies.auth, SIGNATURE);
-    await fetch('https://discord.com/api/oauth2/revoke', {
-      headers: {
-        method: 'POST',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        token: cookie.accessToken,
-      }),
-    });
+    try {
+      const cookie = jsonwebtoken.verify(req.cookies.auth, SIGNATURE);
+      await fetch('https://discord.com/api/oauth2/revoke', {
+        headers: {
+          method: 'POST',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          token: cookie.accessToken,
+        }),
+      });
+    } catch {
+      console.log('logout auth token expired');
+    }
   }
 
-  res.cookie('auth', null);
-  res.cookie('user', null);
-  res.redirect(req.originalUrl);
+  res.clearCookie('auth');
+  res.clearCookie('user');
+  res.redirect(`http://localhost:3000${req.query.origin}`);
 });
 
 export default router;

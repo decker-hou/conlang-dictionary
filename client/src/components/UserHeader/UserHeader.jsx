@@ -20,7 +20,7 @@ function UserHeader(props) {
         ? (
           <div>
             <Link className="profile-link" to="/profile">{`Logged In as: ${username}`}</Link>
-            <a href="http://localhost:8000/logout">Log out</a>
+            <a href={`http://localhost:8000/logout?origin=${window.location.pathname}`}>Log out</a>
           </div>
         )
         : (

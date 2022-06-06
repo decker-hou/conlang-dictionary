@@ -71,6 +71,10 @@ function UserPage() {
               <EditLanguage
                 languageName={language.language_name}
                 summary={language.summary}
+                pos={language.pos}
+                grammaticalGender={language.grammatical_gender}
+                etymology={language.etymology}
+                pronunciation={language.pronunciation}
                 languageId={language.language_id}
                 newLanguage={false}
                 onSubmit={() => { cancelNewLanguage(); setUpdate(!update); }}

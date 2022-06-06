@@ -7,18 +7,21 @@ CREATE TABLE languages (
     language_id SERIAL NOT NULL PRIMARY KEY,
     language_name VARCHAR(255) NOT NULL,
     summary VARCHAR(255),
-    details TEXT,
-    pos TEXT,
+    pos BOOLEAN,
+    grammatical_gender BOOLEAN,
+    pronunciation BOOLEAN,
+    etymology BOOLEAN,
     visibility INT,
-    user_id INT REFERENCES users(user_id),
+    user_id INT REFERENCES users(user_id)
 );
 
 CREATE TABLE words (
     word_id SERIAL NOT NULL PRIMARY KEY,
     word VARCHAR(255) NOT NULL,
-    pos VARCHAR(255),
-    pronunciation VARCHAR(255),
     word_definition TEXT,
+    pos VARCHAR(255),
+    grammatical_gender VARCHAR(255),
+    pronunciation VARCHAR(255),
     etymology TEXT,
     language_id INT REFERENCES languages(language_id),
     time_added TIMESTAMP
